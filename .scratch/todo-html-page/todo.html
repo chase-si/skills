@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>待办清单</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --accent: #2563eb;
+        --accent-hover: #1d4ed8;
+        --danger: #dc2626;
+        --danger-hover: #b91c1c;
+        --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --radius: 12px;
+        --radius-sm: 8px;
+        --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+          Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--text);
+        background: radial-gradient(1200px 600px at 20% -10%, #dbeafe 0%, transparent 55%),
+          radial-gradient(900px 500px at 90% 0%, #e0e7ff 0%, transparent 50%), var(--bg);
+        line-height: 1.5;
+      }
+
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 48px 20px 64px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.75rem, 2.4vw, 2.125rem);
+        letter-spacing: -0.02em;
+      }
+
+      .lede {
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .composer {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        flex-wrap: wrap;
+      }
+
+      .field {
+        flex: 1 1 220px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 0.8125rem;
+        color: var(--muted);
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 12px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        font: inherit;
+        outline: none;
+        background: #fff;
+      }
+
+      input[type="text"]:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+        white-space: nowrap;
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      .btn-primary {
+        align-self: end;
+        color: #fff;
+        background: var(--accent);
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-primary:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+      }
+
+      .btn-danger {
+        color: #fff;
+        background: var(--danger);
+        border-color: rgba(0, 0, 0, 0.06);
+        padding: 8px 10px;
+        font-size: 0.875rem;
+      }
+
+      .btn-danger:hover {
+        background: var(--danger-hover);
+      }
+
+      .btn-danger:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.22);
+      }
+
+      .list-wrap {
+        margin-top: 16px;
+      }
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      li {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: #fff;
+      }
+
+      li:focus-within {
+        border-color: #bfdbfe;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+
+      .title {
+        min-width: 0;
+        word-break: break-word;
+      }
+
+      li[data-completed="true"] .title {
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+
+      .empty {
+        margin: 0;
+        padding: 18px 12px;
+        border: 1px dashed #cbd5e1;
+        border-radius: var(--radius-sm);
+        color: var(--muted);
+        text-align: center;
+        background: #f8fafc;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>待办清单</h1>
+      <p class="lede">极简版：添加、完成、删除。数据保存在本机浏览器的 localStorage。</p>
+
+      <section class="panel" aria-label="任务编辑区">
+        <div class="composer">
+          <div class="field">
+            <label for="todo-input">新任务</label>
+            <input
+              id="todo-input"
+              type="text"
+              autocomplete="off"
+              placeholder="输入任务内容…"
+            />
+          </div>
+          <button id="todo-add" class="btn btn-primary" type="button">添加</button>
+        </div>
+
+        <div class="list-wrap">
+          <ul id="todo-list" aria-live="polite"></ul>
+          <p id="todo-empty" class="empty">还没有任务，先在上方输入并点击「添加」。</p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const STORAGE_KEY = "scratch.todo-html-page.v1";
+
+        /** @typedef {{ id: string, title: string, completed: boolean }} Todo */
+
+        const els = {
+          input: document.getElementById("todo-input"),
+          add: document.getElementById("todo-add"),
+          list: document.getElementById("todo-list"),
+          empty: document.getElementById("todo-empty"),
+        };
+
+        /** @type {Todo[]} */
+        let todos = [];
+
+        function uid() {
+          if (globalThis.crypto && "randomUUID" in globalThis.crypto) return crypto.randomUUID();
+          return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function load() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return;
+            todos = parsed
+              .filter((t) => t && typeof t === "object")
+              .map((t) => ({
+                id: String(t.id ?? uid()),
+                title: String(t.title ?? ""),
+                completed: Boolean(t.completed),
+              }))
+              .filter((t) => t.title.trim().length > 0);
+          } catch {
+            todos = [];
+          }
+        }
+
+        function save() {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+        }
+
+        function render() {
+          els.list.innerHTML = "";
+          const hasItems = todos.length > 0;
+          els.empty.hidden = hasItems;
+          els.list.hidden = !hasItems;
+
+          for (const todo of todos) {
+            const li = document.createElement("li");
+            li.dataset.completed = String(todo.completed);
+
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.checked = todo.completed;
+            cb.setAttribute("aria-label", `标记完成：${todo.title}`);
+            cb.addEventListener("change", () => {
+              todo.completed = cb.checked;
+              li.dataset.completed = String(todo.completed);
+              save();
+            });
+
+            const title = document.createElement("div");
+            title.className = "title";
+            title.textContent = todo.title;
+
+            const del = document.createElement("button");
+            del.type = "button";
+            del.className = "btn btn-danger";
+            del.textContent = "删除";
+            del.setAttribute("aria-label", `删除任务：${todo.title}`);
+            del.addEventListener("click", () => {
+              const ok = globalThis.confirm("确定要删除这条任务吗？");
+              if (!ok) return;
+              todos = todos.filter((t) => t.id !== todo.id);
+              save();
+              render();
+              els.input.focus();
+            });
+
+            li.append(cb, title, del);
+            els.list.append(li);
+          }
+        }
+
+        function addTodo() {
+          const title = els.input.value.trim();
+          if (!title) return;
+          todos.push({ id: uid(), title, completed: false });
+          els.input.value = "";
+          save();
+          render();
+          els.input.focus();
+        }
+
+        els.add.addEventListener("click", addTodo);
+
+        // 访谈结论：仅按钮新增；避免 Enter 误触发表单类行为
+        els.input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") e.preventDefault();
+        });
+
+        load();
+        render();
+      })();
+    </script>
+  </body>
+</html>

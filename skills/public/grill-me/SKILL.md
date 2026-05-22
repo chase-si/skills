@@ -7,6 +7,6 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 
 Ask the questions one at a time.
 
-Use select UX to decide the answer.
+Use select UX to decide the answer, mark the recommended after the options.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
