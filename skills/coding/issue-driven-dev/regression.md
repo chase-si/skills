@@ -1,6 +1,6 @@
 # Regression gate — discovering commands
 
-Run these checks on the **feature branch** before Phase 4. Record the chosen commands in the session so re-runs stay consistent.
+Run these checks on the **feature branch** before Phase 4. Record the chosen commands in the session so re-runs stay consistent. In a multi-issue session, discover the gate once in Phase 0a and reuse the same commands for every issue (including after each parent-branch `pull` before the next feature branch).
 
 ## Decision tree
 
