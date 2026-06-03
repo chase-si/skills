@@ -1,236 +1,178 @@
 ---
 name: issue-driven-dev
 description: >-
-  Runs an ordered queue of issues serially on feature branches (TDD, regression,
-  PR to a confirmed parent branch, babysit, auto-merge when AFK and merge-ready).
-  Use for issue-driven development, issue queue, implementing issue #N then #M,
-  按顺序实现多个 issue, or branch → TDD → PR flow. Confirms parent-branch at
-  session start; reports each merge step.
+  Runs an ordered issue queue serially on one feature branch per issue: confirm
+  parent branch, validate AFK/HITL and blockers, implement with TDD, pass the
+  regression gate, open PRs, babysit, and auto-merge only approved merge-ready
+  work. Use for issue-driven development, implementing issue #N then #M,
+  按顺序实现多个 issue, or branch → TDD → PR → merge flow.
 disable-model-invocation: true
 ---
 
 # Issue-Driven Development
 
-Process an **issue queue** in user-specified order: for each issue, sync **parent-branch** → **feature branch** → TDD → regression gate → PR → babysit → merge (when policy allows) → refresh **parent-branch** → next issue.
+Run a user-provided **issue queue** in order:
 
-**Merge policy** for the session: `auto_with_report` — when an issue is **AFK** and the PR is **merge-ready**, automatically merge, clean up the feature branch, update **parent-branch**, and report each step. Stop the entire queue on **HITL** (without approval), merge failure, or other blockers below.
+`confirm parent-branch + queue → issue branch → TDD → regression gate → PR → babysit → merge if allowed → refresh parent-branch → next issue`
 
-## Terminology
+This is an orchestrator skill. Keep implementation details in the referenced
+skills and files:
+
+- [../tdd/SKILL.md](../tdd/SKILL.md) for RED→GREEN→REFACTOR implementation.
+- [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) after the TDD slice is green.
+- [regression.md](regression.md) for discovering the repo's PR-before-merge gate.
+- [../to-issues/SKILL.md](../to-issues/SKILL.md) for issue metadata conventions: **Type** and **Blocked by**.
+- [../e2e-test-issue/SKILL.md](../e2e-test-issue/SKILL.md) for separate Playwright coverage issues; if E2E work is already in the queue, treat it as a normal issue.
+
+## Core Rules
+
+- Confirm the **parent-branch** with the user before creating any branch.
+- Resolve every queue item before starting, then confirm the exact ordered queue.
+- Never reorder from **Blocked by**; stop if the user-provided order violates open dependencies.
+- Run one issue per feature branch. Do not batch issues.
+- Sync **parent-branch** before each feature branch and after each merge.
+- Do not open a PR until the regression gate passes on the feature branch.
+- Do not start the next issue until the current issue PR has merged into **parent-branch**.
+- Stop the queue on unresolved HITL, failed merge, stale/conflicting parent branch, unclear requirements, or unrelated CI failure.
+- If the user asks to continue before the current PR merges, stop and ask for a new explicit plan; that leaves the serial workflow.
+
+## Terms
 
 | Term | Meaning |
-|------|---------|
-| **parent-branch** | PR base for the whole session; confirmed with the user before any branching |
-| **issue queue** | Ordered list of issues the user gives in this conversation |
-| **queue index** | Current position in the queue (for reporting, e.g. `2/5`) |
-| **feature branch** | Branch scoped to one issue: `<number>-<kebab-slug>` |
-| **regression gate** | Required local test/build (and lint if CI runs it) before opening a PR |
-| **merge-ready** | PR is green, conflicts resolved, review comments triaged |
-| **merge policy** | `auto_with_report`: AFK + merge-ready → merge and report; else stop queue |
+| --- | --- |
+| **parent-branch** | The PR base for the whole session; user-confirmed once before branching |
+| **issue queue** | Ordered issues, URLs, or local issue files supplied by the user |
+| **Type** | `/to-issues` metadata: **AFK** can proceed; **HITL** requires approval |
+| **Blocked by** | `/to-issues` dependency list; blockers must already be closed or merged earlier in this queue |
+| **regression gate** | Local commands matching CI enough to open a PR |
+| **merge-ready** | CI green, no conflicts, review comments addressed, closing keyword present |
 
-## Quick start
+## Session Setup
 
-User invokes with:
+Do this once before the first feature branch.
 
-1. **Ordered issue list** (required, one or more): numbers, URLs, or paths, in execution order (e.g. `#12` then `#15` then `#20`).
-2. **parent-branch** (optional proposal): default to `git branch --show-current`, but **must be confirmed** in Phase 0a — never branch without user confirmation.
+1. Inspect current branch and working tree.
+2. Propose the current branch as **parent-branch** unless the user provided one.
+3. Ask the user to confirm **parent-branch** or name a different one.
+4. Resolve every queue item: title, body, acceptance criteria, **Type**, **Blocked by**.
+5. Discover the regression gate once via [regression.md](regression.md).
+6. Show a queue summary: index, issue ref, title, Type, blockers, acceptance summary.
+7. Ask the user to confirm the queue order before branching.
 
-A single issue is a queue of length 1.
+Do not silently treat branch detection or dependency analysis as user approval.
+Run only the confirmed queue; do not append related issues automatically.
 
-## Workflow checklist
+## Per-Issue Flow
 
-```
-Session:
-- [ ] Phase 0a: Confirm parent-branch(Use select UX to decide the answer) + read full issue queue metadata + confirm ordered queue (no auto-append)
+For each issue `i/n`:
 
-For each issue in queue (queue index i/n):
-- [ ] Phase 0: Per-issue preconditions (resolve issue, AFK/HITL, Blocked by, dirty tree warn)
-- [ ] Phase 1: Sync parent-branch → create feature branch
-- [ ] Phase 2: Implement with /tdd
-- [ ] Phase 3: Regression gate (all green)
-- [ ] Phase 4: Open PR (base = parent-branch, Closes issue) → babysit to merge-ready
-- [ ] Phase 5: If AFK (or HITL approved) + merge-ready → merge + cleanup; else STOP entire queue
-- [ ] Phase 6: Checkout parent-branch, pull (before next issue)
-```
+1. **Preconditions**
+   - Re-read the issue if it may have changed.
+   - Stop on unapproved **HITL**.
+   - Stop on open or unresolved **Blocked by** entries.
+   - Warn on dirty working tree; do not stash without user request.
 
-## Phase 0a — Session setup
+2. **Branch**
+   - Check out **parent-branch**.
+   - `git fetch`, then `git pull` or the repo's required fast-forward equivalent.
+   - Derive the branch name as `<issue-number>-<kebab-slug-from-issue-title>`.
+   - Example: `#42` "Add checkout validation" -> `42-add-checkout-validation`.
+   - Slug rules: lowercase, hyphen-separated, drop punctuation, truncate if the host limits length.
+   - Create the derived branch from the synced **parent-branch**.
 
-Do this **once** before the first feature branch. Do not substitute silent detection for user confirmation.
+3. **Implement**
+   - Follow [../tdd/SKILL.md](../tdd/SKILL.md) in vertical RED→GREEN slices.
+   - Scope strictly to the issue acceptance criteria.
+   - After green/refactor, follow [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md).
+   - Do not add Playwright here unless the current issue is explicitly an E2E issue.
 
-1. **Propose parent-branch**: Show `git branch --show-current` and a short `git status` summary. Ask the user to confirm that branch or name a different **parent-branch**. Record it for the **entire session**; do not change PR base mid-session unless the user says so.
-2. **Read full queue metadata before confirming order**: Resolve every issue in the user’s ordered list before starting implementation. For each item, read title, body, acceptance criteria, **Type** (AFK/HITL), and **Blocked by**. Build a queue summary (`index`, issue ref, title, Type, blockers, acceptance summary) and show it to the user before branching.
-3. **Confirm issue queue**: Restate the user’s ordered list with the metadata summary. Execution order is **only** this list — do not reorder from **Blocked by**. If an issue’s **Blocked by** references an open blocker or an issue not yet merged in this session (when order violates dependency), stop and list conflicts; ask the user to fix order or close blockers.
-4. **Scope**: Run only issues in the confirmed queue; do not add issues automatically.
+4. **Gate**
+   - Run the session regression gate on the feature branch.
+   - Fix failures in the implementation phase and re-run until green.
 
-Discover regression commands once per session via [regression.md](regression.md); reuse the same gate for every issue in the queue.
+5. **PR**
+   - Push the feature branch when ready to open the PR.
+   - Create the PR with **parent-branch** as base.
+   - Include summary, test plan, and `Closes #<issue-number>` or tracker equivalent.
+   - Babysit until **merge-ready**.
 
-## Phase 0 — Per-issue preconditions
+6. **Merge Decision**
+   - Auto-merge only when the issue is **AFK** and the PR is **merge-ready**.
+   - For **HITL**, merge only after explicit user approval in this session.
+   - Use the repo's normal merge method; inspect recent merged PRs or ask once if unclear.
 
-For the current queue item:
+7. **Cleanup**
+   - After merge succeeds, check out **parent-branch** and pull.
+   - Delete the local feature branch with `git branch -d`.
+   - Delete the remote feature branch when it exists.
+   - Confirm the issue closed or report if it did not.
 
-- Resolve the **issue** (title, body, acceptance criteria).
-- Read `/to-issues` metadata in the issue body:
-  - **Type**: **HITL** → stop the **entire queue** and ask the user before implementing this issue. Continue only for **AFK** or when the user explicitly approves this HITL issue in the session.
-  - **Blocked by**: Verify blockers are closed. If incomplete or unclear, **stop the entire queue** and report the blocking issue.
-- Warn on a dirty working tree; do not stash unless the user asks.
-- One issue per feature branch — never batch multiple issues on one branch.
+If any step cannot be completed safely, leave the PR/branch as-is, stop the queue,
+and report the blocker and remaining issues.
 
-## Phase 1 — Branch from issue
+## Merge Policy
 
-1. Derive the branch name: `<issue-number>-<kebab-slug-from-issue-title>`  
-   Example: `#42` "Add checkout validation" → `42-add-checkout-validation`  
-   Slug: lowercase, hyphens, drop punctuation; truncate if the host limits length.
-2. Check out **parent-branch** if not already on it.
-3. **Always** sync **parent-branch** before each new feature branch: `git fetch`, then `git pull` (or `git pull --ff-only` if the repo requires it). Resolve pull failures with the user; never branch from a stale **parent-branch**.
-4. From updated **parent-branch**, run `git checkout -b <feature-branch>`.
+Default policy: `auto_with_report`.
 
-## Phase 2 — Implement with TDD
+Auto-merge is allowed only when all are true:
 
-- Read and follow [../tdd/SKILL.md](../tdd/SKILL.md) (vertical RED→GREEN slices; never horizontal “all tests then all code”).
-- After the TDD slice is green, use [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) to add or recommend only focused Vitest unit/component tests and small contract tests. Do not add a new confirmation point for AFK issues.
-- Scope to issue acceptance criteria; use `CONTEXT.md` domain language when present.
-- Commits and pushes only when user rules allow (default: user must ask to commit).
+- Issue Type is **AFK**, or **HITL** has explicit user approval.
+- PR is **merge-ready** after babysitting.
+- The merge command succeeds without manual intervention.
 
-## Phase 3 — Regression gate
+Never force-push to **parent-branch**. Never delete an unmerged branch with
+`git branch -D` unless the user explicitly asks.
 
-Do **not** open a PR until the regression gate passes on the **feature branch**.
+## Output Contract
 
-Use [regression.md](regression.md). Run the minimal set that matches CI. If ambiguous, ask the user **once per session**, then reuse for all issues.
+At each phase transition, report briefly:
 
-On failure: fix in Phase 2, re-run until green.
+- Queue progress (`i/n`)
+- Current issue title
+- Current branch and **parent-branch**
+- Next action
+- Any user decision needed
 
-## Phase 4 — Pull request and babysit
+After each issue, report:
 
-Follow the user’s **creating-pull-requests** rule: parallel `git status` / `git diff` / log vs base, push with `-u`, `gh pr create` with a HEREDOC body.
+- PR URL
+- Whether it merged
+- Whether **parent-branch** was refreshed
+- Regression commands run
 
-| Field | Rule |
-|-------|------|
-| Base | **parent-branch** (not assumed `main`) |
-| Title | Concise; tied to the issue |
-| Body | Summary, test plan checklist, **`Closes #<number>`** (or tracker equivalent) |
+At the end of the queue, report:
 
-Then follow the **babysit** skill until **merge-ready**:
+- Completed issues
+- Blocked issue, if any, with reason
+- Not-started issues
+- Session regression gate
+- Residual risks
 
-- CI is green.
-- No merge conflicts.
-- No unresolved review comments.
-- PR body has the correct closing keyword.
-- Branch is up to date when the repo requires it.
+## Stop Conditions
 
-Babysit ends at merge-ready; Phase 5 decides merge using **merge policy**.
+Stop the entire queue when:
 
-## Phase 5 — Merge and cleanup (policy-driven)
-
-**Auto-merge** when **all** are true:
-
-- Issue is **AFK**, or **HITL** with explicit user approval for this issue in the session.
-- PR is **merge-ready** after babysit.
-- `gh pr merge` succeeds (prefer the repo’s usual method — inspect recent merged PRs or ask once per repo).
-
-**After auto-merge** (report each step to the user):
-
-1. Checkout **parent-branch**, `git pull`.
-2. Delete **feature branch**: local `git branch -d <feature-branch>`; remote `git push origin --delete <feature-branch>` when it exists on remote.
-3. Confirm the issue closed (e.g. GitHub auto-close from `Closes #N`).
-
-**Stop the entire queue** (do not start the next issue) when:
-
-- **HITL** and the user has not approved this issue.
-- PR is not merge-ready after babysit (including two babysit rounds still not green).
-- Merge fails or requires manual intervention you cannot complete safely.
-- CI failure appears unrelated to the issue or outside scope.
-- Implementation would require expanding beyond the current issue.
-
-Leave an open PR on the feature branch and report PR URL, queue progress, and what blocked continuation.
-
-Git safety: no force-push to **parent-branch**; no `git branch -D` unless merge failed and the user insists.
-
-## Phase 6 — Prepare next issue
-
-Continue to the next queue item **only after Phase 5 merge succeeds** and **parent-branch** has been updated with that merge. Ensure you are on **parent-branch** with `git pull` before Phase 1 for the next issue.
-
-If the user asks to continue without merging the previous issue, treat it as leaving the standard serial workflow: stop, explain that the queue would no longer be `parent-branch → issue branch → PR → merge → updated parent → next issue`, and ask for an explicit new plan before branching.
-
-## Blockers
-
-Stop and ask the user (or stop the queue) when:
-
-- Issue requirements conflict or acceptance criteria are unclear.
+- The user has not confirmed **parent-branch** or queue order.
+- A **HITL** issue is next and lacks explicit approval.
+- A blocker is open, missing, ambiguous, or ordered after the blocked issue.
 - **parent-branch** cannot be pulled cleanly.
-- Tests need missing secrets, services, or unavailable infrastructure.
-- User queue order conflicts with **Blocked by** and the user has not resolved it.
+- Requirements conflict or acceptance criteria are unclear.
+- Tests need unavailable secrets, services, or infrastructure.
+- Regression or CI fails for an unrelated reason.
+- PR remains not merge-ready after reasonable babysitting.
+- Merge fails or needs manual intervention.
+- Continuing would require expanding beyond the current issue.
+- The user asks to start the next issue before the current PR is merged, without a new explicit plan.
 
-## Output expectations
+## Anti-Patterns
 
-At each phase transition, briefly report:
-
-- Queue progress (`i/n`).
-- Current branch and **parent-branch**.
-- Current issue title.
-- Next action.
-- Any user decision needed.
-
-**After each issue:**
-
-- PR URL.
-- Whether the PR was merged.
-- Whether **parent-branch** was updated.
-- Regression commands run (or “same as session gate”).
-
-**End of session:**
-
-- Table: completed / blocked / not started issues.
-- Regression gate commands for the session.
-- Residual risks.
-
-## Examples
-
-**Multi-issue session**
-
-User: parent `develop`, queue `#10` → `#11` → `#12`.
-
-1. Confirm `develop` and queue.
-2. `#10`: `10-…` branch → TDD → gate → PR → merge (AFK) → `develop` pull.
-3. `#11`: repeat from synced `develop`.
-4. If `#12` is HITL and unapproved, stop queue after `#11`; report open PRs if any.
-
-**Branch name**
-
-| Issue | Feature branch |
-|-------|----------------|
-| `#7` — "Fix null cart total" | `7-fix-null-cart-total` |
-
-**PR body snippet**
-
-```markdown
-## Summary
-- …
-
-## Test plan
-- [ ] …
-
-Closes #42
-```
-
-## Anti-patterns
-
-- Branching before **parent-branch** is confirmed in Phase 0a
-- Using `git branch --show-current` as confirmation without user approval
-- Reordering the queue from **Blocked by** instead of the user’s list
-- Adding issues not in the confirmed queue
-- Implementing on **parent-branch** instead of a feature branch
-- Opening the next feature branch without syncing **parent-branch** (`fetch` + `pull`)
-- Opening the next feature branch before the previous issue PR has merged into **parent-branch**
-- Skipping the regression gate before a PR
-- Horizontal TDD (all tests upfront, then all code)
-- Retargeting PR base away from **parent-branch** without user approval
-- Merging when the issue is **HITL** without approval, or when the PR is not **merge-ready**
-- Continuing the queue after a failed merge, unmerged PR, or blocked HITL without a new explicit plan
-
-## Related skills
-
-- [../tdd/SKILL.md](../tdd/SKILL.md) — implementation loop per feature branch
-- [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) — post-TDD Vitest unit/component and small contract supplement pass
-- [../e2e-test-issue/SKILL.md](../e2e-test-issue/SKILL.md) — create separate Playwright E2E testing issues from small stable cases into journeys
-- [regression.md](regression.md) — discover test/build commands (once per session)
-- [../to-issues/SKILL.md](../to-issues/SKILL.md) — **Blocked by** for dependency checks; **order** comes from the user list
-- **babysit** — merge-ready loop; Phase 5 applies **merge policy**
+- Branching before **parent-branch** and queue order are confirmed.
+- Implementing directly on **parent-branch**.
+- Reordering the queue from dependency metadata.
+- Adding issues that were not confirmed in the queue.
+- Opening a PR before the regression gate is green.
+- Starting the next issue before the previous PR is merged into **parent-branch**.
+- Treating TDD as "write all tests, then write all code."
+- Mixing broad E2E coverage into ordinary feature issues.
+- Merging HITL work without explicit approval.
+- Continuing after a failed merge, unmerged PR, or blocked issue without a new plan.
