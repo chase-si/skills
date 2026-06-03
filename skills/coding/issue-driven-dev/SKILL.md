@@ -40,7 +40,7 @@ A single issue is a queue of length 1.
 
 ```
 Session:
-- [ ] Phase 0a: Confirm parent-branch + read full issue queue metadata + confirm ordered queue (no auto-append)
+- [ ] Phase 0a: Confirm parent-branch(Use select UX to decide the answer) + read full issue queue metadata + confirm ordered queue (no auto-append)
 
 For each issue in queue (queue index i/n):
 - [ ] Phase 0: Per-issue preconditions (resolve issue, AFK/HITL, Blocked by, dirty tree warn)
@@ -86,6 +86,7 @@ For the current queue item:
 ## Phase 2 — Implement with TDD
 
 - Read and follow [../tdd/SKILL.md](../tdd/SKILL.md) (vertical RED→GREEN slices; never horizontal “all tests then all code”).
+- After the TDD slice is green, use [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) to add or recommend only focused Vitest unit/component tests and small contract tests. Do not add a new confirmation point for AFK issues.
 - Scope to issue acceptance criteria; use `CONTEXT.md` domain language when present.
 - Commits and pushes only when user rules allow (default: user must ask to commit).
 
@@ -228,6 +229,8 @@ Closes #42
 ## Related skills
 
 - [../tdd/SKILL.md](../tdd/SKILL.md) — implementation loop per feature branch
+- [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) — post-TDD Vitest unit/component and small contract supplement pass
+- [../e2e-test-issue/SKILL.md](../e2e-test-issue/SKILL.md) — create separate Playwright E2E testing issues from small stable cases into journeys
 - [regression.md](regression.md) — discover test/build commands (once per session)
 - [../to-issues/SKILL.md](../to-issues/SKILL.md) — **Blocked by** for dependency checks; **order** comes from the user list
 - **babysit** — merge-ready loop; Phase 5 applies **merge policy**
