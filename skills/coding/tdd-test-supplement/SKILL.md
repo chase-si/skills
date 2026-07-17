@@ -2,7 +2,7 @@
 name: tdd-test-supplement
 description: >-
   Review and supplement tests after a TDD implementation slice, especially from
-  issue-driven-dev. Use after RED->GREEN->REFACTOR when Codex should add only
+  issue-driven-dev. Use after a RED-to-GREEN-to-REFACTOR cycle when Codex should add only
   focused Vitest unit/component tests and a small number of contract tests, and
   recommend where those tests should live.
 ---

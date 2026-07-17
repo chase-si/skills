@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend UI"
+  short_description: "Implement and polish frontend interfaces"
+  default_prompt: "Use $frontend-ui to implement or polish this frontend UI change."

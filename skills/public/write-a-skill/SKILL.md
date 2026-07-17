@@ -23,6 +23,11 @@ description: Create new agent skills with proper structure, progressive disclosu
    - Anything missing or unclear?
    - Should any section be more/less detailed?
 
+4. **Audit predictability** - apply
+   [writing-great-skills](../writing-great-skills/SKILL.md) before finalizing.
+   Check invocation choice, completion criteria, progressive disclosure,
+   duplicated meanings, no-op instructions, sediment, and negation.
+
 ## Skill Structure
 
 ```

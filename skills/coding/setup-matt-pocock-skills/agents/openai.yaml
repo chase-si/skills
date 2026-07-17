@@ -1,0 +1,6 @@
+interface:
+  display_name: "Setup Engineering Skills"
+  short_description: "Configure repository context for engineering skills"
+  default_prompt: "Use $setup-matt-pocock-skills to configure this repository for the engineering skills."
+policy:
+  allow_implicit_invocation: false

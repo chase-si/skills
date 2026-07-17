@@ -59,3 +59,20 @@ test("createUser makes user retrievable", async () => {
   expect(retrieved.name).toBe("Alice");
 });
 ```
+
+**Tautological tests**: Expected values that repeat the implementation pass by
+construction and provide no independent evidence.
+
+```typescript
+// BAD: Recomputes the expected value with the same algorithm
+test("calculateTotal sums line items", () => {
+  const items = [{ price: 10 }, { price: 5 }];
+  const expected = items.reduce((sum, item) => sum + item.price, 0);
+  expect(calculateTotal(items)).toBe(expected);
+});
+
+// GOOD: Uses an independently known result
+test("calculateTotal sums line items", () => {
+  expect(calculateTotal([{ price: 10 }, { price: 5 }])).toBe(15);
+});
+```

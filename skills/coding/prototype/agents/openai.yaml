@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prototype"
+  short_description: "Prototype logic or UI to answer a design question"
+  default_prompt: "Use $prototype to build a throwaway prototype for this design question."

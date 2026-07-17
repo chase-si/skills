@@ -1,6 +1,6 @@
 ---
 name: to-issues
-description: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.
+description: Break a plan, spec, or PRD into independently-grabbable issues using tracer-bullet vertical slices or expand-contract sequencing for wide refactors. Use when the user wants to create implementation tickets, model blockers, or break work into issues.
 ---
 
 # To Issues
@@ -28,8 +28,23 @@ Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an
 <vertical-slice-rules>
 - Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
 - A completed slice is demoable or verifiable on its own
+- Each slice fits in one fresh agent context window
 - Prefer many thin slices over few thick ones
+- Put any prefactoring needed to make the change easy before the dependent slices
 </vertical-slice-rules>
+
+**Wide refactors are the exception to vertical slicing.** A wide refactor is one
+mechanical change whose blast radius crosses much of the codebase, so no narrow
+slice can merge green by itself. Sequence it as **expand–contract**:
+
+1. **Expand** — introduce the new form beside the old one without breaking callers.
+2. **Migrate** — move callers in batches sized by blast radius, each blocked by
+   the expand issue. Keep CI green while both forms coexist.
+3. **Contract** — remove the old form after every migration issue is complete.
+
+If migration batches cannot stay green independently, use a shared integration
+branch and make them all block a final integrate-and-verify issue. Do not force
+a wide mechanical refactor into fake end-to-end slices.
 
 ### 4. Quiz the user
 
@@ -49,11 +64,40 @@ Ask the user:
 
 Iterate until the user approves the breakdown.
 
-### 5. Publish the issues to the issue tracker
+### 5. Publish the issues to the configured tracker
 
-For each approved slice, publish a new issue to the issue tracker. Use the issue body template below. These issues are considered ready for AFK agents, so publish them with the correct triage label unless instructed otherwise.
+Publish in dependency order, blockers first. Preserve the same issue content
+regardless of tracker; only the representation of parent and blocking edges
+changes:
 
-Publish issues in dependency order (blockers first) so you can reference real issue identifiers in the "Blocked by" field.
+- **Local Markdown** — write one file per issue under
+  `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in
+  dependency order. Never combine the issue set into one file.
+- **GitHub, GitLab, or another real tracker** — create one issue per slice. Use
+  native sub-issues for the parent relationship and native blocking edges where
+  the tracker supports them. Keep `## Parent` and `## Blocked by` in the body as
+  the fallback when it does not.
+
+Apply the configured `ready-for-agent` or `ready-for-human` triage label based
+on Type unless the user instructs otherwise. Do not close or modify the parent.
+
+<local-issue-template>
+
+# <NN> — <Issue title>
+
+**Type:** AFK or HITL
+
+**What to build:** the end-to-end behavior this issue makes work, from the
+user's perspective.
+
+**Blocked by:** issue numbers and titles, or "None — can start immediately".
+
+**Status:** the configured ready-for-agent or ready-for-human label
+
+- [ ] Acceptance criterion 1
+- [ ] Acceptance criterion 2
+
+</local-issue-template>
 
 <issue-template>
 ## Parent
@@ -74,10 +118,8 @@ Avoid specific file paths or code snippets — they go stale fast. Exception: if
 
 ## Blocked by
 
-- A reference to the blocking ticket (if any)
+- References to every blocking issue
 
-Or "None - can start immediately" if no blockers.
+Or "None — can start immediately" if there are no blockers.
 
 </issue-template>
-
-Do NOT close or modify any parent issue.

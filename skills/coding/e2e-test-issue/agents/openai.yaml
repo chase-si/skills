@@ -1,0 +1,6 @@
+interface:
+  display_name: "E2E Test Issue"
+  short_description: "Plan stable standalone Playwright coverage"
+  default_prompt: "Use $e2e-test-issue to draft a standalone Playwright coverage issue."
+policy:
+  allow_implicit_invocation: false

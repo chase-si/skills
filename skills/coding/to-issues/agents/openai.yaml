@@ -1,0 +1,6 @@
+interface:
+  display_name: "To Issues"
+  short_description: "Turn plans into blocked implementation-ready issues"
+  default_prompt: "Use $to-issues to turn this plan into implementation-ready issues."
+policy:
+  allow_implicit_invocation: false

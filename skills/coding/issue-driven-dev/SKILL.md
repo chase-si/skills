@@ -3,8 +3,8 @@ name: issue-driven-dev
 description: >-
   Runs an ordered issue queue serially on one feature branch per issue: confirm
   parent branch, validate AFK/HITL and blockers, implement with TDD, pass the
-  regression gate, open PRs, babysit, and auto-merge only approved merge-ready
-  work. Use for issue-driven development, implementing issue #N then #M,
+  regression gate and two-axis code review, open PRs, babysit, and auto-merge
+  only approved merge-ready work. Use for issue-driven development, implementing issue #N then #M,
   按顺序实现多个 issue, or branch → TDD → PR → merge flow.
 disable-model-invocation: true
 ---
@@ -13,13 +13,14 @@ disable-model-invocation: true
 
 Run a user-provided **issue queue** in order:
 
-`confirm parent-branch + queue → issue branch → TDD → regression gate → PR → babysit → merge if allowed → refresh parent-branch → next issue`
+`confirm parent-branch + queue → issue branch → TDD → regression gate → code review → PR → babysit → merge if allowed → refresh parent-branch → next issue`
 
 This is an orchestrator skill. Keep implementation details in the referenced
 skills and files:
 
 - [../tdd/SKILL.md](../tdd/SKILL.md) for RED→GREEN→REFACTOR implementation.
 - [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) after the TDD slice is green.
+- [../code-review/SKILL.md](../code-review/SKILL.md) for separate Standards and Spec review before opening a PR.
 - [regression.md](regression.md) for discovering the repo's PR-before-merge gate.
 - [../to-issues/SKILL.md](../to-issues/SKILL.md) for issue metadata conventions: **Type** and **Blocked by**.
 - [../e2e-test-issue/SKILL.md](../e2e-test-issue/SKILL.md) for separate Playwright coverage issues; if E2E work is already in the queue, treat it as a normal issue.
@@ -90,18 +91,25 @@ For each issue `i/n`:
    - Run the session regression gate on the feature branch.
    - Fix failures in the implementation phase and re-run until green.
 
-5. **PR**
+5. **Review**
+   - Run [../code-review/SKILL.md](../code-review/SKILL.md) against
+     **parent-branch** as the fixed point and the current issue as the spec.
+   - Address actionable Standards and Spec findings without expanding beyond
+     the issue acceptance criteria.
+   - If review changes code, re-run the regression gate before continuing.
+
+6. **PR**
    - Push the feature branch when ready to open the PR.
    - Create the PR with **parent-branch** as base.
    - Include summary, test plan, and `Closes #<issue-number>` or tracker equivalent.
    - Babysit until **merge-ready**.
 
-6. **Merge Decision**
+7. **Merge Decision**
    - Auto-merge only when the issue is **AFK** and the PR is **merge-ready**.
    - For **HITL**, merge only after explicit user approval in this session.
    - Use the repo's normal merge method; inspect recent merged PRs or ask once if unclear.
 
-7. **Cleanup**
+8. **Cleanup**
    - After merge succeeds, check out **parent-branch** and pull.
    - Delete the local feature branch with `git branch -d`.
    - Delete the remote feature branch when it exists.
@@ -159,6 +167,8 @@ Stop the entire queue when:
 - Requirements conflict or acceptance criteria are unclear.
 - Tests need unavailable secrets, services, or infrastructure.
 - Regression or CI fails for an unrelated reason.
+- Code review finds a requirements conflict or a material issue that cannot be
+  resolved within the current issue.
 - PR remains not merge-ready after reasonable babysitting.
 - Merge fails or needs manual intervention.
 - Continuing would require expanding beyond the current issue.

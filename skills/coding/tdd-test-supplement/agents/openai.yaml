@@ -1,0 +1,4 @@
+interface:
+  display_name: "TDD Test Supplement"
+  short_description: "Supplement a green TDD slice with focused tests"
+  default_prompt: "Use $tdd-test-supplement to review and supplement the tests for this green TDD slice."

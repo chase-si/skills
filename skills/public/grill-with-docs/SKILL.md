@@ -5,11 +5,15 @@ description: Grilling session that challenges your plan against the existing dom
 
 <what-to-do>
 
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
 Ask the questions one at a time, waiting for feedback on each question before continuing.
 
-If a question can be answered by exploring the codebase, explore the codebase instead.
+If a fact can be found by exploring the environment — the codebase, filesystem,
+or available tools — look it up instead of asking me. Decisions are mine: put
+each decision to me and wait for my answer.
+
+Do not act on the plan until I confirm that we have reached a shared understanding.
 
 </what-to-do>
 

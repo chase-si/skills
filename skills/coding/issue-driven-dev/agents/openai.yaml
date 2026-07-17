@@ -1,0 +1,6 @@
+interface:
+  display_name: "Issue-Driven Development"
+  short_description: "Run a confirmed issue queue through PR and merge"
+  default_prompt: "Use $issue-driven-dev to implement this confirmed issue queue."
+policy:
+  allow_implicit_invocation: false
