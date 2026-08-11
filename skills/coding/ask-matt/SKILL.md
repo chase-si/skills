@@ -28,11 +28,10 @@ path; do not start it until the user explicitly asks.
   `$prototype`, then return with the answer.
 - **Multi-issue or multi-session build** → `$to-prd` → `$to-issues` →
   `$issue-driven-dev`. The final skill runs each confirmed issue through TDD,
-  focused test supplementation, regression checks, two-axis review, PR, and
+  acceptance-criteria coverage, regression checks, two-axis review, PR, and
   merge policy.
 - **One concrete behavior with no issue/PR orchestration needed** → `$tdd`.
-  Follow with `$tdd-test-supplement` when the green slice needs a focused test
-  audit, then `$code-review` when a fixed-point review is useful.
+  Follow with `$code-review` when a fixed-point review is useful.
 
 For frontend implementation inside either route, apply `$frontend-ui` alongside
 the implementation skill so layout, responsive behavior, states, and browser

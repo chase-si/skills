@@ -17,8 +17,7 @@ Run a user-provided **issue queue** in order:
 This is an orchestrator skill. Keep implementation details in the referenced
 skills and files:
 
-- [../tdd/SKILL.md](../tdd/SKILL.md) for RED→GREEN→REFACTOR implementation.
-- [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md) after the TDD slice is green.
+- [../tdd/SKILL.md](../tdd/SKILL.md) for vertical RED→GREEN implementation and acceptance-criteria coverage.
 - [../code-review/SKILL.md](../code-review/SKILL.md) for separate Standards and Spec review before opening a PR.
 - [regression.md](regression.md) for discovering the repo's PR-before-merge gate.
 - [../to-issues/SKILL.md](../to-issues/SKILL.md) for issue metadata conventions: **Type** and **Blocked by**.
@@ -96,7 +95,6 @@ For each issue `i/n`:
      stay local and diagnostic.
    - When the repo exposes a typecheck command, run it regularly, especially
      after changing public interfaces, schemas, generated types, or adapters.
-   - After green/refactor, follow [../tdd-test-supplement/SKILL.md](../tdd-test-supplement/SKILL.md).
    - Do not add Playwright here unless the current issue is explicitly an E2E issue.
 
 4. **Gate**

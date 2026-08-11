@@ -10,7 +10,7 @@ description: >-
 # E2E Test Issue
 
 Write issue guidance for Playwright E2E coverage that is intentionally separate
-from feature implementation and TDD supplement work.
+from feature implementation and its TDD work.
 
 Use this when the desired outcome is an issue or issue plan, not immediate
 implementation inside an existing feature PR.
@@ -86,4 +86,4 @@ If the repo has no convention, propose:
 - Testing implementation details, CSS classes, or private component structure.
 - Depending on fragile sleeps instead of locator state and domain outcomes.
 - Letting trace collection be optional for new E2E coverage.
-- Mixing broad E2E work into the TDD supplement pass.
+- Mixing broad E2E work into feature TDD slices.

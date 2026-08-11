@@ -19,11 +19,26 @@ See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking g
 
 A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
 
-**Test only at pre-agreed seams.** Before writing any test, write down the seams under test and confirm them with the user. No test is written at an unconfirmed seam. You can't test everything — agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
+Resolve the seam before writing the first test:
 
-Ask: "What's the public interface, and which seams should we test?"
+1. Prefer a seam already agreed in the originating PRD or issue.
+2. Otherwise prefer the highest existing public interface that proves the
+   acceptance criterion end to end.
+3. In HITL work, confirm a new or ambiguous seam with the user before testing.
+4. In AFK `issue-driven-dev`, infer the seam from the acceptance criteria and
+   nearby test conventions, record the assumption, and continue without
+   blocking on approval.
 
-When the shape of that interface is itself in question — how deep the module is, where the seam belongs, what the interface should expose — use the `/codebase-design` skill for the vocabulary. It is the shared source of the module, interface, depth, seam, adapter, leverage and locality terms, and it is a reference to consult, not a session to run.
+Do not write a test at an unconfirmed seam in HITL work or an unrecorded seam
+in AFK work. Focus testing on critical paths and complex behavior rather than
+trying to cover every possible edge case.
+
+When HITL input is required, ask: "What's the public interface, and which seams should we test?"
+
+When the interface shape itself is in question — how deep the module is, where
+the seam belongs, or what it should expose — consult
+[Interface Design](../improve-codebase-architecture/INTERFACE-DESIGN.md) for
+the shared module, interface, seam, adapter, leverage, and locality vocabulary.
 
 ## Anti-patterns
 
@@ -35,4 +50,9 @@ When the shape of that interface is itself in question — how deep the module i
 
 - **Red before green.** Write the failing test first, then only enough code to pass it. Don't anticipate future tests or add speculative features.
 - **One slice at a time.** One seam, one test, one minimal implementation per cycle.
+- **Close acceptance gaps with another slice.** When an issue or PRD exists,
+  map the green tests back to its acceptance criteria before leaving
+  implementation. If an observable criterion lacks proof at the chosen seam,
+  add another RED→GREEN slice. Record criteria that genuinely require E2E or
+  unavailable infrastructure instead of forcing them into a lower test seam.
 - **Refactoring is not part of the loop.** It belongs to the review stage (see the `code-review` skill), not the red → green implementation cycle.
