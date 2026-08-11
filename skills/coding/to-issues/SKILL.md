@@ -78,8 +78,18 @@ changes:
   the tracker supports them. Keep `## Parent` and `## Blocked by` in the body as
   the fallback when it does not.
 
-Apply the configured `ready-for-agent` or `ready-for-human` triage label based
-on Type unless the user instructs otherwise. Do not close or modify the parent.
+Apply the `issue` workflow label to every published issue when the tracker
+supports labels. Treat readiness as current state, not eventual intent:
+
+- An AFK issue with no unresolved blockers receives `ready-for-agent`.
+- A HITL issue with no unresolved blockers receives `ready-for-human`.
+- An issue with any unresolved blocker receives neither ready label. Apply the
+  configured blocked label when one exists; otherwise leave it without a ready
+  triage label and rely on its explicit blocking edges.
+
+Do not mark a dependent issue ready merely because its blockers were published
+earlier; they must actually be closed or otherwise satisfied according to the
+tracker. Do not close or modify the parent.
 
 <local-issue-template>
 
@@ -92,7 +102,8 @@ user's perspective.
 
 **Blocked by:** issue numbers and titles, or "None — can start immediately".
 
-**Status:** the configured ready-for-agent or ready-for-human label
+**Status:** `ready-for-agent`, `ready-for-human`, or the configured blocked
+status, according to Type and currently unresolved blockers
 
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
@@ -103,6 +114,10 @@ user's perspective.
 ## Parent
 
 A reference to the parent issue on the issue tracker (if the source was an existing issue, otherwise omit this section).
+
+## Type
+
+AFK or HITL.
 
 ## What to build
 

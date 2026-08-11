@@ -1,19 +1,19 @@
 # Agents Skills
 
-This repository keeps two skill directories side by side:
+本仓库并排维护两套 skill 目录：
 
-- `skills/`: your local/custom skills tracked by this repository.
-- `skills-main/`: upstream Matt Pocock skills, tracked as a Git submodule from `https://github.com/mattpocock/skills.git`.
+- `skills/`：由本仓库跟踪的本地/自定义 skills。
+- `skills-main/`：上游 Matt Pocock skills，以 Git 子模块形式跟踪，来源为 `https://github.com/mattpocock/skills.git`。
 
-## Update `skills/`
+## 更新 `skills/`
 
-From anywhere:
+在任意目录下执行：
 
 ```bash
 git -C /Users/chasewu/.agents pull
 ```
 
-If you changed local skills and want to save them:
+若修改了本地 skills 并需要保存：
 
 ```bash
 git -C /Users/chasewu/.agents add skills
@@ -21,15 +21,15 @@ git -C /Users/chasewu/.agents commit -m "Update local skills"
 git -C /Users/chasewu/.agents push
 ```
 
-## Update `skills-main/`
+## 更新 `skills-main/`
 
-Fetch the latest upstream submodule commit:
+拉取上游子模块的最新提交：
 
 ```bash
 git -C /Users/chasewu/.agents submodule update --remote skills-main
 ```
 
-Record that new submodule pointer in this repository:
+在本仓库中记录新的子模块指针：
 
 ```bash
 git -C /Users/chasewu/.agents add .gitmodules skills-main README.md
@@ -37,14 +37,14 @@ git -C /Users/chasewu/.agents commit -m "Update skills-main submodule"
 git -C /Users/chasewu/.agents push
 ```
 
-## Fresh clone setup
+## 新机器克隆后的初始化
 
-After cloning this repository on a new machine, initialize submodules:
+克隆本仓库后，初始化子模块：
 
 ```bash
 git submodule update --init --recursive
 ```
 
-## Backup
+## 备份说明
 
-The previous plain-directory copy was moved to `skills-main.bak/` during the submodule conversion.
+在改为子模块之前，原先的纯目录副本已移至 `skills-main.bak/`。
