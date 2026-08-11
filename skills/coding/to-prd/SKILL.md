@@ -28,6 +28,14 @@ Map every user story to externally observable acceptance criteria and the seam
 through which each criterion will be verified. Record whether verification is
 automated or human and why.
 
+Assign every acceptance criterion a PRD-wide stable identifier (`AC-1`,
+`AC-2`, ...). After the PRD is published, never renumber or reuse an identifier;
+append new identifiers when the PRD changes. These identifiers are the contract
+that downstream issues, tests, and reviews use for traceability.
+
+Treat published user-story identifiers (`US-N`) the same way: preserve existing
+identifiers and append new ones instead of renumbering the list.
+
 Check with the user that the module boundaries, critical behaviours, and test
 seams match their expectations. Ask which risks require the strongest proof;
 do not ask them to choose internal modules merely for test coverage.
@@ -70,13 +78,16 @@ This list of user stories should be extremely extensive and cover all aspects of
 Map every user story to one or more externally observable acceptance criteria.
 For every criterion include:
 
+- **Acceptance ID:** its stable `AC-N` identifier
 - **User story:** its `US-N` identifier
 - **Acceptance criterion:** the observable outcome that must hold
 - **Test seam:** the highest practical public interface through which it is verified
 - **Verification:** automated or human, with the reason for that choice
 
 Every user story must appear in this mapping. A criterion may cover multiple
-stories when the relationship is explicit.
+stories when the relationship is explicit. Keep the acceptance IDs stable after
+publication so derived issues can refer to them without copying an ambiguous or
+silently renumbered requirement.
 
 ## Implementation Decisions
 

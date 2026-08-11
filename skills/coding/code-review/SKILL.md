@@ -24,12 +24,32 @@ Before going further, confirm the fixed point resolves (`git rev-parse <fixed-po
 
 ### 2. Identify the spec source
 
-Look for the originating spec, in this order:
+Build the originating specification chain in this order:
 
-1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.) — fetch via the workflow in `docs/agents/issue-tracker.md`.
-2. A path the user passed as an argument.
-3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
-4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+1. **Current issue** — find issue references in commit messages (`#123`,
+   `Closes #45`, GitLab `!67`, etc.) and fetch the full issue via the workflow in
+   `docs/agents/issue-tracker.md`. The issue defines the current slice's scope,
+   acceptance criteria, test seams, and verification decisions.
+2. **Parent PRD** — follow the issue's `Derived from` or `Parent` reference and
+   fetch the full PRD. The PRD defines the user intent, stable `US-N`/`AC-N`
+   mapping, cross-cutting constraints, and out-of-scope boundaries. Record the
+   referenced revision when one is available; if it no longer matches the
+   current PRD revision, report source drift before judging implementation.
+3. **Architectural decisions** — read ADRs relevant to the changed area. They
+   constrain the implementation but do not expand the issue's product scope.
+4. **Explicit source** — include a path the user passed, or a matching spec
+   under `docs/`, `specs/`, or `.scratch/`, when the issue chain is absent or the
+   user names it as an additional source.
+
+Treat the current issue as the unit of delivery: do not report unrelated parts
+of the parent PRD as missing from this issue. Use the parent PRD to verify that
+the issue's `US-N`/`AC-N` claims are accurate and that the implementation does
+not violate feature-wide constraints. If the issue, PRD, and ADRs contradict
+one another, report the conflict rather than silently choosing a source.
+
+If no current issue or other spec can be found, ask the user where the spec is.
+If they say there isn't one, the **Spec** sub-agent will skip and report
+"no spec available".
 
 ### 3. Identify the standards sources
 
@@ -66,8 +86,20 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 **Spec sub-agent prompt** — include:
 
 - The diff command and commit list.
-- The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+- The current issue, parent PRD, relevant ADRs, and any explicit spec source,
+  clearly labelled. Include their paths or fetched contents and the issue's
+  claimed `US-N`/`AC-N` coverage, test seams, and verification decisions.
+- The precedence rule: review the current issue as the delivery scope; use the
+  parent PRD for traceability and feature-wide constraints; use ADRs as
+  architectural constraints. Report contradictions instead of resolving them.
+- The brief: "Report: (a) issue acceptance criteria that are missing, partial,
+  or not proved at the specified seam; (b) incorrect `US-N`/`AC-N` traceability
+  to the parent PRD; (c) behaviour not requested by the current issue or allowed
+  by the PRD (scope creep); (d) requirements that look implemented but whose
+  behaviour appears wrong; (e) deviations from the agreed verification method;
+  and (f) conflicts with relevant ADRs. Do not expect this issue to implement
+  unrelated parts of the parent PRD. Quote the source and stable identifier for
+  each finding. Under 400 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 

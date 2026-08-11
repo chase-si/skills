@@ -59,7 +59,10 @@ Do this once before the first feature branch.
 1. Inspect current branch and working tree.
 2. Propose the current branch as **parent-branch** unless the user provided one.
 3. Ask the user to confirm **parent-branch** or name a different one.
-4. Resolve every queue item: title, body, acceptance criteria, **Type**, **Blocked by**.
+4. Resolve every queue item: title, body, **Derived from**, `US-N`/`AC-N`
+   coverage, acceptance criteria, test seams, verification decisions, **Type**,
+   and **Blocked by**. For legacy or non-PRD issues without stable identifiers,
+   note that traceability is unavailable rather than inventing source IDs.
 5. Discover the regression gate once via [regression.md](regression.md).
 6. Show a queue summary: index, issue ref, title, Type, blockers, acceptance summary.
 7. Ask the user to confirm the queue order before branching.
@@ -96,6 +99,9 @@ For each issue `i/n`:
    - When the repo exposes a typecheck command, run it regularly, especially
      after changing public interfaces, schemas, generated types, or adapters.
    - Do not add Playwright here unless the current issue is explicitly an E2E issue.
+   - Maintain the TDD acceptance-to-evidence map keyed by `AC-N`, including the
+     public seam and test evidence for every automated criterion and the pending
+     evidence or approval for every human criterion.
 
 4. **Gate**
    - Run the session regression gate on the feature branch.
@@ -121,7 +127,8 @@ For each issue `i/n`:
 7. **PR**
    - Push the feature branch when ready to open the PR.
    - Create the PR with **parent-branch** as base.
-   - Include summary, test plan, and `Closes #<issue-number>` or tracker equivalent.
+   - Include summary, test plan, the `AC-N` acceptance-to-evidence map, and
+     `Closes #<issue-number>` or tracker equivalent.
    - Babysit until **merge-ready**.
 
 8. **Merge Decision**
@@ -168,6 +175,7 @@ After each issue, report:
 - Whether **parent-branch** was refreshed
 - Candidate and review-fix commits created
 - Regression commands run
+- `AC-N` acceptance-to-evidence coverage, including any human verification
 
 At the end of the queue, report:
 

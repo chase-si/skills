@@ -33,6 +33,14 @@ Do not write a test at an unconfirmed seam in HITL work or an unrecorded seam
 in AFK work. Focus testing on critical paths and complex behavior rather than
 trying to cover every possible edge case.
 
+When the source uses stable acceptance identifiers (`AC-N`), maintain an
+acceptance-to-evidence map throughout the loop. For each automated criterion,
+record the public seam and the test case or test file that proves it; do not
+force the identifier into the test name when that would make the test less
+readable. For each human criterion, record the required evidence or approval
+instead of pretending a lower-level automated test proves it. Return this map
+to the calling workflow for review and PR reporting.
+
 When HITL input is required, ask: "What's the public interface, and which seams should we test?"
 
 When the interface shape itself is in question — how deep the module is, where
@@ -51,7 +59,7 @@ the shared module, interface, seam, adapter, leverage, and locality vocabulary.
 - **Red before green.** Write the failing test first, then only enough code to pass it. Don't anticipate future tests or add speculative features.
 - **One slice at a time.** One seam, one test, one minimal implementation per cycle.
 - **Close acceptance gaps with another slice.** When an issue or PRD exists,
-  map the green tests back to its acceptance criteria before leaving
+  map the green tests back to its stable acceptance criteria before leaving
   implementation. If an observable criterion lacks proof at the chosen seam,
   add another RED→GREEN slice. Record criteria that genuinely require E2E or
   unavailable infrastructure instead of forcing them into a lower test seam.

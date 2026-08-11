@@ -15,6 +15,11 @@ The issue tracker and triage label vocabulary should have been provided to you �
 
 Work from whatever is already in the conversation context. If the user passes an issue reference (issue number, URL, or path) as an argument, fetch it from the issue tracker and read its full body and comments.
 
+Identify the authoritative source for the breakdown. When it is a PRD, retain
+its tracker reference or path and its current revision where the tracker exposes
+one. Read its user stories, stable acceptance IDs (`AC-N`), test seams, and
+verification decisions; do not regenerate or renumber those identifiers.
+
 ### 2. Explore the codebase (optional)
 
 If you have not already explored the codebase, do so to understand the current state of the code. Issue titles and descriptions should use the project's domain glossary vocabulary, and respect ADRs in the area you're touching.
@@ -32,6 +37,17 @@ Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an
 - Prefer many thin slices over few thick ones
 - Put any prefactoring needed to make the change easy before the dependent slices
 </vertical-slice-rules>
+
+For a PRD-derived breakdown, create a coverage map before publishing:
+
+- Every issue names the `US-N` and `AC-N` identifiers it covers.
+- Every source acceptance criterion is owned by at least one issue.
+- Every covered acceptance criterion carries forward its agreed test seam and
+  verification method.
+- If decomposition reveals a missing or contradictory acceptance criterion,
+  return to the PRD instead of inventing an untraceable issue-only requirement.
+- If more than one issue intentionally shares an acceptance criterion, explain
+  which part each issue proves and where final verification occurs.
 
 **Wide refactors are the exception to vertical slicing.** A wide refactor is one
 mechanical change whose blast radius crosses much of the codebase, so no narrow
@@ -54,6 +70,8 @@ Present the proposed breakdown as a numbered list. For each slice, show:
 - **Type**: HITL / AFK
 - **Blocked by**: which other slices (if any) must complete first
 - **User stories covered**: which user stories this addresses (if the source material has them)
+- **Acceptance criteria covered**: which stable `AC-N` identifiers this slice owns
+- **Test seams and verification**: how the covered criteria will be proved
 
 Ask the user:
 
@@ -63,6 +81,9 @@ Ask the user:
 - Are the correct slices marked as HITL and AFK?
 
 Iterate until the user approves the breakdown.
+
+Before publishing, show the aggregate `US-N`/`AC-N` coverage map and resolve
+every uncovered acceptance criterion, unexplained overlap, or verification gap.
 
 ### 5. Publish the issues to the configured tracker
 
@@ -97,6 +118,10 @@ tracker. Do not close or modify the parent.
 
 **Type:** AFK or HITL
 
+**Derived from:** Authoritative source reference or path; for a PRD, include its revision when available
+
+**Covers:** `US-N`; `AC-N`
+
 **What to build:** the end-to-end behavior this issue makes work, from the
 user's perspective.
 
@@ -105,8 +130,17 @@ user's perspective.
 **Status:** `ready-for-agent`, `ready-for-human`, or the configured blocked
 status, according to Type and currently unresolved blockers
 
-- [ ] Acceptance criterion 1
-- [ ] Acceptance criterion 2
+## Acceptance criteria
+
+- [ ] `AC-N` — Full observable criterion carried forward from the PRD
+
+## Test seams
+
+- `AC-N` — Highest practical public interface used to prove the criterion
+
+## Verification
+
+- `AC-N` — Automated or human, with the reason carried forward from the PRD
 
 </local-issue-template>
 
@@ -114,6 +148,11 @@ status, according to Type and currently unresolved blockers
 ## Parent
 
 A reference to the parent issue on the issue tracker (if the source was an existing issue, otherwise omit this section).
+
+## Derived from
+
+The authoritative source reference or path. When the source is a PRD, include
+the revision used for this breakdown when available.
 
 ## Type
 
@@ -125,11 +164,22 @@ A concise description of this vertical slice. Describe the end-to-end behavior, 
 
 Avoid specific file paths or code snippets — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it here and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
 
+## Covers
+
+- **User stories:** `US-N`
+- **Acceptance criteria:** `AC-N`
+
 ## Acceptance criteria
 
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
+- [ ] `AC-N` — Full observable criterion carried forward from the PRD
+
+## Test seams
+
+- `AC-N` — Highest practical public interface through which the criterion is verified
+
+## Verification
+
+- `AC-N` — Automated or human, with the reason for that choice
 
 ## Blocked by
 
