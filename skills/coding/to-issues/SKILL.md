@@ -1,13 +1,20 @@
 ---
 name: to-issues
 description: Break a plan, spec, or PRD into independently-grabbable issues with portable capability/reasoning requirements and model recommendations, using vertical slices or expand-contract sequencing. Use when the user wants to create implementation tickets, model blockers, or break work into issues.
+disable-model-invocation: true
 ---
 
 # To Issues
 
 Break a plan into independently-grabbable issues using vertical slices (tracer bullets).
 
-The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
+Read the project's configured issue tracker and triage vocabulary. If they are
+missing, tell the user to run `/setup-matt-pocock-skills`; it is a user-invoked
+setup workflow. Do not guess the tracker or publish before it is configured.
+
+Before exploring, read the
+[domain document rules](../setup-matt-pocock-skills/domain.md) to resolve the
+configured glossary and ADRs, including existing `GLOSSARY.md` projects.
 
 ## Process
 

@@ -1,13 +1,21 @@
 ---
 name: domain-modeling
-description: Build and sharpen a project's domain model. Use when the user wants to pin down domain terminology or a ubiquitous language, record an architectural decision, or when another skill needs to maintain the domain model.
+description: "Sharpen project terminology and record architectural decisions. Use when discussing domain language or writing or editing a project glossary or ADR."
 ---
 
 # Domain Modeling
 
-Actively build and sharpen the project's domain model as you design. This is the *active* discipline — challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `CONTEXT.md` for vocabulary is not this skill — that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
+Actively build and sharpen the project's domain model as you design. Challenge
+terms, invent edge-case scenarios, and write the glossary and decisions down
+the moment they crystallise. Reading an existing glossary for vocabulary alone
+does not require this skill.
 
 ## File structure
+
+First read the [domain document rules](../setup-matt-pocock-skills/domain.md)
+to resolve the project's configured glossary and map, including existing
+`GLOSSARY.md` / `GLOSSARY-MAP.md` projects. The examples below use the defaults for new
+projects; keep existing projects' filenames and update the resolved file.
 
 Most repos have a single context:
 
@@ -21,7 +29,7 @@ Most repos have a single context:
 └── src/
 ```
 
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
+If a context map exists, follow its links to the relevant contexts:
 
 ```
 /
@@ -37,13 +45,18 @@ If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The ma
 │       └── docs/adr/
 ```
 
-Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
+Create files lazily. When the first term is resolved, create a missing glossary
+at the path selected by the repo's configuration or context map. Use root
+`CONTEXT.md` only when no layout exists. Create the relevant ADR directory
+when the first ADR is needed.
 
 ## During the session
 
 ### Challenge against the glossary
 
-When the user uses a term that conflicts with the existing language in `CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+When the user uses a term that conflicts with the resolved glossary, call it out
+immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y.
+Which is it?"
 
 ### Sharpen fuzzy language
 
@@ -57,11 +70,13 @@ When domain relationships are being discussed, stress-test them with specific sc
 
 When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
 
-### Update CONTEXT.md inline
+### Update the glossary inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+When a term is resolved, update the resolved glossary right there. Capture terms
+as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
 
-`CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
+Keep the glossary focused on domain terms and relationships. Put requirements
+in the PRD and implementation decisions in the appropriate design doc or ADR.
 
 ### Offer ADRs sparingly
 

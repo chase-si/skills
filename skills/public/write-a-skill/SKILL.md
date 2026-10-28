@@ -1,13 +1,15 @@
 ---
 name: write-a-skill
 description: Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.
+disable-model-invocation: true
 ---
 
 # Writing Skills
 
 ## Process
 
-1. **Gather requirements** - ask user about:
+1. **Gather requirements** - use the conversation and available references
+   first. Ask only for material gaps:
    - What task/domain does the skill cover?
    - What specific use cases should it handle?
    - Does it need executable scripts or just instructions?
@@ -15,7 +17,7 @@ description: Create new agent skills with proper structure, progressive disclosu
 
 2. **Draft the skill** - create:
    - SKILL.md with concise instructions
-   - Additional reference files if content exceeds 500 lines
+   - Reference files for substantial conditional detail or shared procedures
    - Utility scripts if deterministic operations needed
 
 3. **Review with user** - present draft and ask:
@@ -23,8 +25,10 @@ description: Create new agent skills with proper structure, progressive disclosu
    - Anything missing or unclear?
    - Should any section be more/less detailed?
 
-4. **Audit predictability** - apply
-   [writing-great-skills](../writing-great-skills/SKILL.md) before finalizing.
+4. **Audit predictability** - load `writing-great-skills` with the environment's
+   skill-loading tool, or read
+   [its instructions](../writing-great-skills/SKILL.md) when no such tool is
+   available, before finalizing.
    Check invocation choice, completion criteria, progressive disclosure,
    duplicated meanings, no-op instructions, sediment, and negation.
 
@@ -64,7 +68,10 @@ description: Brief description of capability. Use when [specific triggers].
 
 ## Description Requirements
 
-The description is **the only thing your agent sees** when deciding which skill to load. It's surfaced in the system prompt alongside all other installed skills. Your agent reads these descriptions and picks the relevant skill based on the user's request.
+For model-invoked skills, the name and description guide discovery before the
+body is read. Explicit-only entrypoints follow the invocation rules in
+[SKILL-MECHANICS.md](../writing-great-skills/SKILL-MECHANICS.md). Preserve an
+existing invocation policy unless the user asks to change it.
 
 **Goal**: Give your agent just enough info to know:
 
@@ -106,7 +113,7 @@ Scripts save tokens and improve reliability vs generated code.
 
 Split into separate files when:
 
-- SKILL.md exceeds 100 lines
+- Shared or conditional guidance obscures the main workflow
 - Content has distinct domains (finance vs sales schemas)
 - Advanced features are rarely needed
 
@@ -115,8 +122,8 @@ Split into separate files when:
 After drafting, verify:
 
 - [ ] Description includes triggers ("Use when...")
-- [ ] SKILL.md under 100 lines
-- [ ] No time-sensitive info
+- [ ] Main workflow remains clear; conditional detail has useful pointers
+- [ ] Time-sensitive claims are verified or linked to an authoritative source
 - [ ] Consistent terminology
-- [ ] Concrete examples included
-- [ ] References one level deep
+- [ ] Examples clarify a real decision or workflow
+- [ ] Required references exist and state when to read them

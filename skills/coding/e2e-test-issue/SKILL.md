@@ -5,6 +5,7 @@ description: >-
   coverage separately from implementation work: start with necessary small,
   stable cases that run frequently with traces, then compose those cases into
   larger journeys only where the product path needs end-to-end confidence.
+disable-model-invocation: true
 ---
 
 # E2E Test Issue

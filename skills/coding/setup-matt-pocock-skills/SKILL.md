@@ -10,7 +10,7 @@ Scaffold the per-repo configuration that the engineering skills assume:
 
 - **Issue tracker** — where issues live (GitHub by default; local markdown is also supported out of the box)
 - **Triage labels** — the strings used for the five canonical triage roles
-- **Domain docs** — where `CONTEXT.md` and ADRs live, and the consumer rules for reading them
+- **Domain docs** — where `CONTEXT.md`, the context map, and ADRs live, with support for existing configured filenames
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -22,10 +22,14 @@ Look at the current repo to understand its starting state. Read whatever exists;
 
 - `git remote -v` and `.git/config` — is this a GitHub repo? Which one?
 - `AGENTS.md` and `CLAUDE.md` at the repo root — does either exist? Is there already an `## Agent skills` section in either?
-- `CONTEXT.md` and `CONTEXT-MAP.md` at the repo root
+- `CONTEXT.md`, `CONTEXT-MAP.md`, and existing `GLOSSARY.md` / `GLOSSARY-MAP.md` at the repo root
 - `docs/adr/` and any `src/*/docs/adr/` directories
 - `docs/agents/` — does this skill's prior output already exist?
 - `.scratch/` — sign that a local-markdown issue tracker convention is already in use
+
+Read [domain.md](domain.md) for document-resolution rules. Detect and preserve
+existing configured paths before proposing defaults; setup does not migrate or
+rename an existing project's domain documents.
 
 ### 2. Present findings and ask
 
@@ -35,7 +39,7 @@ Assume the user does not know what these terms mean. Each section starts with a 
 
 **Section A — Issue tracker.**
 
-> Explainer: The "issue tracker" is where issues live for this repo. Skills like `to-issues`, `triage`, `to-prd`, and `qa` read from and write to it — they need to know whether to call `gh issue create`, write a markdown file under `.scratch/`, or follow some other workflow you describe. Pick the place you actually track work for this repo.
+> Explainer: The "issue tracker" is where issues live for this repo. Skills like `to-issues`, `to-prd`, and `issue-driven-dev` read from and write to it. They need to know whether to call `gh issue create`, write a markdown file under `.scratch/`, or follow some other workflow you describe. Pick the place you actually track work for this repo.
 
 Default posture: these skills were designed for GitHub. If a `git remote` points at GitHub, propose that. If a `git remote` points at GitLab (`gitlab.com` or a self-hosted host), propose GitLab. Otherwise (or if the user prefers), offer:
 
@@ -46,7 +50,13 @@ Default posture: these skills were designed for GitHub. If a `git remote` points
 
 **Section B — Triage label vocabulary.**
 
-> Explainer: When the `triage` skill processes an incoming issue, it moves it through a state machine — needs evaluation, waiting on reporter, ready for an AFK agent to pick up, ready for a human, or won't fix. To do that, it needs to apply labels (or the equivalent in your issue tracker) that match strings *you've actually configured*. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
+> Explainer: `to-issues` and `issue-driven-dev` use readiness labels to distinguish AFK work, human decisions, and unresolved blockers. A separate `triage` skill, if installed, uses the broader vocabulary below. Map existing tracker labels rather than creating duplicates.
+
+Keep this configuration even when no `triage` skill is installed: the local
+delivery flow still needs `ready-for-agent` and `ready-for-human`. Record a
+blocked status or label when the tracker has one, or use explicit blocking
+edges with neither ready label. Workflow labels `prd` and `issue` remain the
+publishing skills' separate conventions.
 
 The five canonical roles:
 
@@ -60,12 +70,20 @@ Default: each role's string equals its name. Ask the user if they want to overri
 
 **Section C — Domain docs.**
 
-> Explainer: Some skills (`improve-codebase-architecture`, `diagnosing-bugs`, `tdd`) read a `CONTEXT.md` file to learn the project's domain language, and `docs/adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
+> Explainer: Engineering skills read the project's glossary for domain language and its ADRs for architectural decisions. New projects use `CONTEXT.md`; existing projects keep their configured names and paths, including `GLOSSARY.md`.
 
-Confirm the layout:
+Preserve an existing layout. For a new project, propose a single context by
+default. Offer multiple contexts only when the codebase contains distinct
+domains that need their own language; a package count alone is not enough.
 
-- **Single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. Most repos are this.
-- **Multi-context** — `CONTEXT-MAP.md` at the root pointing to per-context `CONTEXT.md` files (typically a monorepo).
+- **Single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root.
+- **Multi-context** — `CONTEXT-MAP.md` pointing to per-context glossary files
+  and ADR directories.
+
+Record the actual authoritative paths in `docs/agents/domain.md`, including
+existing names and map links. If both naming conventions coexist for one context,
+resolve which is authoritative before generating navigation. Keep the fallback
+and lazy-creation rules from the seed template for future consumers.
 
 ### 3. Confirm and edit
 

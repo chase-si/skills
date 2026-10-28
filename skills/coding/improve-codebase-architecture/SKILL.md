@@ -1,6 +1,7 @@
 ---
 name: improve-codebase-architecture
-description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.
+description: "Find deepening opportunities using the project's domain glossary and ADRs. Use when improving architecture, consolidating tightly coupled modules, or making a codebase more testable and easier to navigate."
+disable-model-invocation: true
 ---
 
 # Improve Codebase Architecture
@@ -40,9 +41,13 @@ changes become easier, so decide where to look before exploring broadly:
   repeatedly changed paths to find current hot spots.
 - Widen the scan only when changes are scattered and no useful hot spot emerges.
 
-Read the project's domain glossary and any ADRs in the area you're touching first.
+Read the [domain document rules](../setup-matt-pocock-skills/domain.md) to
+resolve the project's glossary and ADRs, including existing `GLOSSARY.md` and
+context maps. Read the relevant documents before exploring.
 
-Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction:
+Then delegate a focused exploration using the environment's subagent tools
+when available, or explore directly. Follow the scoped friction rather than
+rigid heuristics:
 
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow** — interface nearly as complex as the implementation?
@@ -61,7 +66,9 @@ Present a numbered list of deepening opportunities. For each candidate:
 - **Solution** — plain English description of what would change
 - **Benefits** — explained in terms of locality and leverage, and also in how tests would improve
 
-**Use CONTEXT.md vocabulary for the domain, and [LANGUAGE.md](LANGUAGE.md) vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
+**Use the resolved glossary for domain vocabulary and [LANGUAGE.md](LANGUAGE.md)
+for architecture vocabulary.** If the glossary defines "Order," talk about
+"the Order intake module" rather than an implementation class name.
 
 **ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly (e.g. _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
 
@@ -69,11 +76,16 @@ Do NOT propose interfaces yet. Ask the user: "Which of these would you like to e
 
 ### 3. Grilling loop
 
-Once the user picks a candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+Once the user picks a candidate, read the shared
+[interview rules](../../public/grill-me/INTERVIEW.md) and load `domain-modeling`
+with the environment's skill-loading tool, or read
+[its instructions](../domain-modeling/SKILL.md) when no such tool is available.
+Walk the design tree: constraints, dependencies, the deepened module, what sits
+behind the seam, and what tests survive.
 
 Side effects happen inline as decisions crystallize:
 
-- **Naming a deepened module after a concept not in `CONTEXT.md`?** Add the term to `CONTEXT.md` — same discipline as `/grill-with-docs` (see [CONTEXT-FORMAT.md](../../public/grill-with-docs/CONTEXT-FORMAT.md)). Create the file lazily if it doesn't exist.
-- **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
-- **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones. See [ADR-FORMAT.md](../../public/grill-with-docs/ADR-FORMAT.md).
+- **Naming a deepened module after a concept absent from the glossary?** Add it to the resolved glossary using [CONTEXT-FORMAT.md](../domain-modeling/CONTEXT-FORMAT.md). Create a glossary lazily if none exists.
+- **Sharpening a fuzzy term during the conversation?** Update that same glossary in place.
+- **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when a future explorer would need the reason; skip ephemeral reasons and self-evident ones. See [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md).
 - **Want to explore alternative interfaces for the deepened module?** See [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md).

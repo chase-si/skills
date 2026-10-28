@@ -11,6 +11,8 @@
 #   capture VAR "<question>"      → show question, read response into VAR
 #
 # At the end, captured values are printed as KEY=VALUE for the agent to parse.
+# Capture only redacted observations, never passwords, tokens, or auth headers.
+# Signing in stays a step; credentials remain in the user's environment.
 
 set -euo pipefail
 
@@ -32,7 +34,7 @@ step "Open the app at http://localhost:3000 and sign in."
 
 capture ERRORED "Click the 'Export' button. Did it throw an error? (y/n)"
 
-capture ERROR_MSG "Paste the error message (or 'none'):"
+capture ERROR_MSG "Paste the redacted error message (or 'none'):"
 
 # --- edit above ---------------------------------------------------------
 

@@ -1,6 +1,7 @@
 ---
 name: ask-matt
 description: Recommend the smallest skill or workflow that fits the user's current situation. Use when the user is unsure which installed skill to invoke, asks where to start, or wants a route from an idea, bug, issue queue, review, architecture concern, frontend task, or skill-authoring task to completion.
+disable-model-invocation: true
 ---
 
 # Ask Matt
@@ -22,7 +23,8 @@ path; do not start it until the user explicitly asks.
 ## Main Flow: Idea to Ship
 
 - **Idea in an existing codebase** → `$grill-with-docs` to resolve decisions
-  while keeping `CONTEXT.md` and ADRs current.
+  while keeping the configured glossary (`CONTEXT.md` or an existing `GLOSSARY.md`)
+  and ADRs current.
 - **Plan or design without a codebase** → `$grill-me` for a stateless interview.
 - **A design question needs something runnable or visible** → detour through
   `$prototype`, then return with the answer.
@@ -33,6 +35,15 @@ path; do not start it until the user explicitly asks.
 - **One concrete behavior with no issue/PR orchestration needed** → `$tdd`.
   Follow with `$code-review` when a fixed-point review is useful.
 
+`$to-spec` and `$to-tickets` remain compatibility entrypoints for `$to-prd` and
+`$to-issues`. Recommend the primary local names; both routes use the same
+acceptance traceability and execution guidance.
+
+When work becomes a PR, `$pr` shapes its summary, observed evidence, acceptance
+map, and merge impact. After a session, `$retro` can suggest improvements to
+the agent's environment. Run it before clearing context, or provide the original
+session log afterward. Neither changes the serial queue or merge policy.
+
 For frontend implementation inside either route, apply `$frontend-ui` alongside
 the implementation skill so layout, responsive behavior, states, and browser
 rendering receive explicit attention.
@@ -41,8 +52,9 @@ rendering receive explicit attention.
 
 - **Something is broken, flaky, failing, or slow** → `$diagnosing-bugs`.
   Establish a tight red-capable feedback loop before theorizing. Use `$tdd` for
-  the regression fix; if the post-mortem finds no good test seam, continue with
-  `$improve-codebase-architecture`.
+  the regression fix. Once fixed and cleaned up, recommend `$retro` to identify
+  preventive improvements. A missing test seam may warrant
+  `$improve-codebase-architecture` as a separate user-selected follow-up.
 - **A confirmed ordered issue queue must be delivered through PRs** →
   `$issue-driven-dev` directly. Do not send already-approved issues back through
   `$to-prd` or `$to-issues`.
@@ -61,9 +73,11 @@ rendering receive explicit attention.
 - **Engineering skills lack tracker, triage, or domain-doc context** →
   `$setup-matt-pocock-skills` before the rest of the engineering flow.
 - **The current conversation must continue in a fresh session** → `$handoff`.
-- **Create a new reusable skill** → `$write-a-skill`, then audit the draft with
-  `$writing-great-skills`.
-- **Review or refine an existing skill** → `$writing-great-skills` directly.
+- **Create a new reusable skill** → `$write-a-skill`, which loads
+  `$writing-great-skills` to audit the draft.
+- **Review or refine a skill or agent-facing document** → `$writing-great-skills`.
+- **Look back on a coding session** → `$retro`, using session evidence to
+  propose navigation, checks, standards, or tooling improvements.
 
 ## Output Contract
 

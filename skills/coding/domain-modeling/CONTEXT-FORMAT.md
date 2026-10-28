@@ -51,10 +51,7 @@ _Avoid_: Client, buyer, account
 - **Ordering ↔ Billing**: Shared types for `CustomerId` and `Money`
 ```
 
-The skill infers which structure applies:
-
-- If `CONTEXT-MAP.md` exists, read it to find contexts
-- If only a root `CONTEXT.md` exists, single context
-- If neither exists, create a root `CONTEXT.md` lazily when the first term is resolved
-
-When multiple contexts exist, infer which one the current topic relates to. If unclear, ask.
+For layout selection and existing configured filenames, follow the
+[domain document rules](../setup-matt-pocock-skills/domain.md). New projects use
+`CONTEXT.md` / `CONTEXT-MAP.md`. Apply the same content format to an existing
+`GLOSSARY.md` project without renaming its files or changing its map links.

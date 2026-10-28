@@ -6,6 +6,7 @@ description: >-
   regression gate, commit a review candidate, pass two-axis code review, open
   PRs, babysit, and auto-merge only approved merge-ready work. Use for issue-driven development, implementing issue #N then #M,
   按顺序实现多个 issue, or branch → TDD → PR → merge flow.
+disable-model-invocation: true
 ---
 
 # Issue-Driven Development
@@ -19,9 +20,16 @@ skills and files:
 
 - [../tdd/SKILL.md](../tdd/SKILL.md) for vertical RED→GREEN implementation and acceptance-criteria coverage.
 - [../code-review/SKILL.md](../code-review/SKILL.md) for separate Standards and Spec review before opening a PR.
+- [../pr/SKILL.md](../pr/SKILL.md) for the PR summary, evidence, and merge impact.
 - [regression.md](regression.md) for discovering the repo's PR-before-merge gate.
 - [../to-issues/SKILL.md](../to-issues/SKILL.md) for issue metadata conventions: **Type** and **Blocked by**.
 - [../e2e-test-issue/SKILL.md](../e2e-test-issue/SKILL.md) for separate Playwright coverage issues; if E2E work is already in the queue, treat it as a normal issue.
+
+At the implementation, review, and PR phases, load the corresponding
+model-invoked skill with the environment's skill-loading tool, or read the
+linked instructions when no such tool is available. The `to-issues` and
+`e2e-test-issue` links describe metadata conventions only; they do not authorize
+launching those user-only planning workflows.
 
 ## Core Rules
 
@@ -127,8 +135,10 @@ For each issue `i/n`:
 7. **PR**
    - Push the feature branch when ready to open the PR.
    - Create the PR with **parent-branch** as base.
-   - Include summary, test plan, the `AC-N` acceptance-to-evidence map, and
-     `Closes #<issue-number>` or tracker equivalent.
+   - Follow [../pr/SKILL.md](../pr/SKILL.md), keeping the repo's PR template.
+     Include the summary, observed before/after evidence where applicable,
+     test plan, `AC-N` acceptance-to-evidence map, merge impact and
+     reversibility, and `Closes #<issue-number>` or tracker equivalent.
    - Babysit until **merge-ready**.
 
 8. **Merge Decision**

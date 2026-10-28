@@ -7,7 +7,17 @@ description: Diagnosis loop for hard bugs and performance regressions. Use when 
 
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
-When exploring the codebase, read `CONTEXT.md` (if it exists) to get a clear mental model of the relevant modules, and check ADRs in the area you're touching.
+When exploring the codebase, follow the
+[domain document rules](../setup-matt-pocock-skills/domain.md) to read the
+configured glossary (`CONTEXT.md` or an existing `GLOSSARY.md`) and relevant ADRs.
+
+## Redact
+
+Before showing a command, output, log, or captured artifact, replace secrets
+with `<REDACTED>`. Build reproduction commands against environment variables
+so credentials stay out of the transcript and saved scripts. Quote only the
+signal-carrying lines of HAR files and other artifacts that may carry auth
+headers. Ask for a redacted artifact when user input is needed.
 
 ## Phase 1 — Build a feedback loop
 
@@ -46,11 +56,11 @@ The goal is not a clean repro but a **higher reproduction rate**. Loop the trigg
 
 ### When you genuinely cannot build a loop
 
-Stop and say so explicitly. List what you tried. Ask the user for: (a) access to whatever environment reproduces it, (b) a captured artifact (HAR file, log dump, core dump, screen recording with timestamps), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
+Stop and say so explicitly. List what you tried. Ask the user for: (a) access to whatever environment reproduces it, (b) a redacted captured artifact (HAR file, log dump, core dump, screen recording with timestamps), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
 
 ### Completion criterion — a tight loop that goes red
 
-Phase 1 is done when the loop is **tight** and **red-capable**: you can name **one command** — a script path, a test invocation, a curl — that you have **already run at least once** (paste the invocation and its output), and that is:
+Phase 1 is done when the loop is **tight** and **red-capable**: you can name **one command** — a script path, a test invocation, a curl — that you have **already run at least once** (show the invocation and its output, redacted), and that is:
 
 - [ ] **Red-capable** — it drives the actual bug code path and asserts the **user's exact symptom**, so it can go red on this bug and green once fixed. Not "runs without erroring" — it must be able to _catch this specific bug_.
 - [ ] **Deterministic** — same verdict every run (flaky bugs: a pinned, high reproduction rate, per above).
@@ -111,9 +121,14 @@ Write the regression test **before the fix** — but only if there is a **correc
 
 A correct seam is one where the test exercises the **real bug pattern** as it occurs at the call site. If the only available seam is too shallow (single-caller test when the bug needs multiple callers, unit test that can't replicate the chain that triggered the bug), a regression test there gives false confidence.
 
-**If no correct seam exists, that itself is the finding.** Note it. The codebase architecture is preventing the bug from being locked down. Flag this for the next phase.
+**If no correct seam exists, that itself is the finding.** Record the missing
+seam and the original reproduction evidence. Keep the fix scoped to the bug.
 
 If a correct seam exists:
+
+Load `tdd` with the environment's skill-loading tool, or read
+[its instructions](../tdd/SKILL.md) when no such tool is available. Apply its
+public-seam and AFK/HITL rules to the regression test:
 
 1. Turn the minimised repro into a failing test at that seam.
 2. Watch it fail.
@@ -121,7 +136,7 @@ If a correct seam exists:
 4. Watch it pass.
 5. Re-run the Phase 1 feedback loop against the original (un-minimised) scenario.
 
-## Phase 6 — Cleanup + post-mortem
+## Phase 6 — Cleanup
 
 Required before declaring done:
 
@@ -131,4 +146,9 @@ Required before declaring done:
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
 - [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
 
-**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. Make the recommendation **after** the fix is in, not before — you have more information now than when you started.
+After the fix and cleanup, report the cause, proof, and any missing test seam.
+For a useful follow-up, recommend `/retro` in this session to examine what would
+have prevented the bug. Recommend `/improve-codebase-architecture` only when
+no suitable test seam exists to lock down this bug with a regression test;
+include the concrete evidence. These are user-only
+follow-ups; do not start them or expand the fix automatically.

@@ -10,7 +10,14 @@ Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
 
-The issue tracker should have been provided to you — run `/setup-matt-pocock-skills` if `docs/agents/issue-tracker.md` is missing.
+Use `docs/agents/issue-tracker.md` when fetching tracker references. If it is
+missing and tracker access is needed, tell the user to run
+`/setup-matt-pocock-skills`; do not invoke that user-only workflow yourself.
+An explicit local spec can still be reviewed without a tracker.
+
+When consulting domain language or ADRs, read the
+[domain document rules](../setup-matt-pocock-skills/domain.md) to resolve the
+configured glossary and decisions, including existing `GLOSSARY.md` projects.
 
 ## Process
 
